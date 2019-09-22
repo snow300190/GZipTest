@@ -13,7 +13,6 @@ namespace GZipTest
     {
         private static IParser<string, Operations> _operationParser = new OperationParser();
         private static IValidator<string, string> _pathValidator = new PathValidator();
-        public static ProgressBar PBar;
 
         static void Main(string[] args)
         {
@@ -39,21 +38,17 @@ namespace GZipTest
             else
             {
                 string result;
-                IManager manager = null;
                 IArchivator archivator = null;
                 try
                 {
-                    manager = new Manager(inPath, outPath, operation);
-                    archivator = new Archivator(manager);
-                    PBar = new ProgressBar();
+                    using (IManager manager = new Manager(inPath, outPath, operation)) {
+                        archivator = new Archivator(manager);
+                    }
                     result = archivator.Perform();
                 }
                 catch {
                     result = Responses.NOT_SUCCESS;
                 }
-                manager.Dispose();
-                PBar.Dispose();
-                //Console.WriteLine();
                 Console.WriteLine(result);
                 Console.ReadKey();
                 

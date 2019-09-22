@@ -9,7 +9,6 @@ namespace GZipTest.Tests
     [TestClass]
     public class ArchivatorTests
     {
-        private IManager _manager;
         private IArchivator _archivator;
 
         [TestMethod]
@@ -23,10 +22,11 @@ namespace GZipTest.Tests
             if (File.Exists(destinationFile))
                 File.Delete(destinationFile);
             File.WriteAllText(sourceFile, testStr);
-            _manager = new Manager(sourceFile, destinationFile, Operations.Compress);
-            _archivator = new Archivator(_manager);
-            _archivator.Perform();
-            _manager.Dispose();
+            using (IManager manager = new Manager(sourceFile, destinationFile, Operations.Compress))
+            {
+                _archivator = new Archivator(manager);
+                _archivator.Perform();
+            }
             Assert.IsTrue(File.Exists(destinationFile));
             Assert.IsTrue(File.ReadAllBytes(destinationFile).Length > 0);
             File.Delete(sourceFile);
@@ -50,15 +50,17 @@ namespace GZipTest.Tests
 
             File.WriteAllText(sourceFile, testStr);
 
-            _manager = new Manager(sourceFile, destinationFile, Operations.Compress);
-            _archivator = new Archivator(_manager);
-            _archivator.Perform();
-            _manager.Dispose();
+            using (IManager manager = new Manager(sourceFile, destinationFile, Operations.Compress))
+            {
+                _archivator = new Archivator(manager);
+                _archivator.Perform();
+            }
 
-            _manager = new Manager(compressedFile, decompressedSourceFile, Operations.Decompress);
-            _archivator = new Archivator(_manager);
-            _archivator.Perform();
-            _manager.Dispose();
+            using (IManager manager = new Manager(compressedFile, decompressedSourceFile, Operations.Decompress))
+            {
+                _archivator = new Archivator(manager);
+                _archivator.Perform();
+            }
 
             string decompressedTestStr = File.ReadAllText(decompressedSourceFile);
 

@@ -17,6 +17,7 @@ namespace GZipTest
         private FileStream _rFileStream;
         private FileStream _wFileStream;
         private MemoryStream _readBufferStream;
+        private ProgressBar PBar;
 
         public Manager(string sourceFilePath, string destinationFilePath, Operations operaton)
         {
@@ -39,6 +40,8 @@ namespace GZipTest
             _wFileStream = new FileStream(destinationFilePath, FileMode.OpenOrCreate, FileAccess.Write, FileShare.Read);
 
             _readBufferStream = new MemoryStream();
+
+            PBar = new ProgressBar();
         }
 
         public string SourceFilePath { get; set; }
@@ -57,6 +60,7 @@ namespace GZipTest
             _rFileStream.Dispose();
             _readBufferStream.Dispose();
             _wFileStream.Dispose();
+            PBar.Dispose();
         }
 
         public IPart ReadNextPartOfFile()
@@ -108,7 +112,7 @@ namespace GZipTest
                 }
                 try
                 {
-                    Program.PBar.Report(_rFileStream.Position / (double)_rFileStream.Length);
+                    PBar.Report(_rFileStream.Position / (double)_rFileStream.Length);
                 }
                 catch { }
             }
