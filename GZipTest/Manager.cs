@@ -110,11 +110,7 @@ namespace GZipTest
                         _processedParts++;
                     }
                 }
-                try
-                {
-                    PBar.Report(_rFileStream.Position / (double)_rFileStream.Length);
-                }
-                catch { }
+                PBar.Report(_rFileStream.Position / (double)_rFileStream.Length);
             }
         }
     }
