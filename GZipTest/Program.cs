@@ -41,10 +41,11 @@ namespace GZipTest
                 IArchivator archivator = null;
                 try
                 {
-                    using (IManager manager = new Manager(inPath, outPath, operation)) {
+                    using (IManager manager = new Manager(inPath, outPath, operation))
+                    {
                         archivator = new Archivator(manager);
+                        result = archivator.Perform();
                     }
-                    result = archivator.Perform();
                 }
                 catch {
                     result = Responses.NOT_SUCCESS;
