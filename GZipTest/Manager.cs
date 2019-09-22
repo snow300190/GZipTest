@@ -12,7 +12,6 @@ namespace GZipTest
         private ConcurrentDictionary<int, IPart> _waitingParts;
         private int _processedParts = 0;
         private int _currentPart = 0;
-        private int _writePosition = 0;
         private object rLockObj;
         private object wLockObj;
         private FileStream _rFileStream;
@@ -36,8 +35,8 @@ namespace GZipTest
             if (Operaton == Operations.Compress && string.IsNullOrWhiteSpace(Path.GetExtension(destinationFilePath)))
                 destinationFilePath += ".gz";
 
-            _rFileStream = new FileStream(sourceFilePath, FileMode.Open, FileAccess.Read);
-            _wFileStream = new FileStream(destinationFilePath, FileMode.CreateNew, FileAccess.Write);
+            _rFileStream = new FileStream(sourceFilePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+            _wFileStream = new FileStream(destinationFilePath, FileMode.OpenOrCreate, FileAccess.Write, FileShare.Read);
 
             _readBufferStream = new MemoryStream();
         }
@@ -53,23 +52,29 @@ namespace GZipTest
         public int AvailebleMemoryPerThread { get; }
         public Progress CurrentProgress { get; set; }
 
+        public void Dispose()
+        {
+            _rFileStream.Dispose();
+            _readBufferStream.Dispose();
+            _wFileStream.Dispose();
+        }
+
         public IPart ReadNextPartOfFile()
         {
             lock (rLockObj)
             {
                 if (CurrentProgress == Progress.InProcess)
                 {
-                    _rFileStream.CopyTo(_readBufferStream, AvailebleMemoryPerThread);
-                    if (_readBufferStream.Length > 0)
+                    byte[] buffer = new byte[AvailebleMemoryPerThread];
+                    int readed = _rFileStream.Read(buffer,0,buffer.Length);
+                    if (readed > 0)
                     {
-                        Part part = new Part(_currentPart, Operaton, _readBufferStream.ToArray());
+                        Part part = new Part(_currentPart, Operaton, buffer);
+                        part.Count = readed;
                         _currentPart++;
-                        _readBufferStream.SetLength(0);
                         return part;
                     }
                     CurrentProgress = Progress.Done;
-                    _rFileStream.Dispose();
-                    _readBufferStream.Dispose();
                 }
                 return null;
             }
@@ -106,11 +111,6 @@ namespace GZipTest
                     Program.PBar.Report(_rFileStream.Position / (double)_rFileStream.Length);
                 }
                 catch { }
-            }
-            if (CurrentProgress == Progress.Done && _waitingParts.Count == 0)
-            {
-                _wFileStream.Unlock(0, _wFileStream.Length-1);
-                _wFileStream.Dispose();
             }
         }
     }

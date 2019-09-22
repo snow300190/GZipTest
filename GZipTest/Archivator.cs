@@ -55,8 +55,7 @@ namespace GZipTest
                 {
                     using (Stream gZipStream = new GZipStream(resultStream, CompressionMode.Compress))
                     {
-                        //gZipStream.Write(part.OriginalData, 0, part.Count);
-                        sourceStream.CopyTo(gZipStream);
+                        gZipStream.Write(part.OriginalData, 0, part.Count);
                     }
                     part.ResultData = resultStream.ToArray();
                 }
@@ -71,7 +70,6 @@ namespace GZipTest
                 {
                     using (Stream gZipStream = new GZipStream(sourceStream, CompressionMode.Decompress))
                     {
-                        //gZipStream.Write(part.OriginalData, 0, part.Count);
                         gZipStream.CopyTo(resultStream);
                     }
                     part.ResultData = resultStream.ToArray();

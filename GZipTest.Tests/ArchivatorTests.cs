@@ -26,6 +26,7 @@ namespace GZipTest.Tests
             _manager = new Manager(sourceFile, destinationFile, Operations.Compress);
             _archivator = new Archivator(_manager);
             _archivator.Perform();
+            _manager.Dispose();
             Assert.IsTrue(File.Exists(destinationFile));
             Assert.IsTrue(File.ReadAllBytes(destinationFile).Length > 0);
             File.Delete(sourceFile);
@@ -52,10 +53,12 @@ namespace GZipTest.Tests
             _manager = new Manager(sourceFile, destinationFile, Operations.Compress);
             _archivator = new Archivator(_manager);
             _archivator.Perform();
+            _manager.Dispose();
 
             _manager = new Manager(compressedFile, decompressedSourceFile, Operations.Decompress);
             _archivator = new Archivator(_manager);
             _archivator.Perform();
+            _manager.Dispose();
 
             string decompressedTestStr = File.ReadAllText(decompressedSourceFile);
 

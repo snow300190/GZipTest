@@ -1,8 +1,9 @@
 ﻿using GZipTest.Enums;
+using System;
 
 namespace GZipTest.Interfaces
 {
-    public interface IManager
+    public interface IManager : IDisposable
     {
         string SourceFilePath { get; set; }
         string DestinationFilePath { get; set; }

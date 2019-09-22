@@ -25,7 +25,7 @@ namespace GZipTest
             string inPath = args.Length > 1 ? args[1] : string.Empty;
             string outPath = args.Length > 2 ? args[2] : string.Empty;
             string pathValidationResult = _pathValidator.Validate(inPath);
-            if (pathValidationResult == null)
+            if (pathValidationResult != null)
                 errors.Add($"{inPath} - {pathValidationResult}");
 
             if (outPath == null)
@@ -39,20 +39,24 @@ namespace GZipTest
             else
             {
                 string result;
+                IManager manager = null;
+                IArchivator archivator = null;
                 try
                 {
-                    IManager manager = new Manager(inPath, outPath, operation);
-                    IArchivator archivator = new Archivator(manager);
+                    manager = new Manager(inPath, outPath, operation);
+                    archivator = new Archivator(manager);
                     PBar = new ProgressBar();
                     result = archivator.Perform();
                 }
                 catch {
                     result = Responses.NOT_SUCCESS;
                 }
-                Console.WriteLine();
+                manager.Dispose();
+                PBar.Dispose();
+                //Console.WriteLine();
                 Console.WriteLine(result);
                 Console.ReadKey();
-                PBar.Dispose();
+                
             }
  
         }
