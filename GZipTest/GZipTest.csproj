@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Management" Version="4.5.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\GZipTest.Enums\GZipTest.Enums.csproj" />
+    <ProjectReference Include="..\GZipTest.Interfaces\GZipTest.Interfaces.csproj" />
+    <ProjectReference Include="..\GZipTest.Models\GZipTest.Models.csproj" />
+    <ProjectReference Include="..\GZipTest.Parsers\GZipTest.Parsers.csproj" />
+    <ProjectReference Include="..\GZipTest.Validators\GZipTest.Validators.csproj" />
+  </ItemGroup>
+
+</Project>
