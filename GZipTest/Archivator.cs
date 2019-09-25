@@ -1,6 +1,7 @@
 ﻿using GZipTest.Constants;
 using GZipTest.Enums;
 using GZipTest.Interfaces;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
@@ -70,7 +71,7 @@ namespace GZipTest
                 {
                     using (Stream gZipStream = new GZipStream(sourceStream, CompressionMode.Decompress))
                     {
-                        gZipStream.CopyTo(resultStream);
+                        gZipStream.CopyTo(resultStream, part.Count);                        
                     }
                     part.ResultData = resultStream.ToArray();
                 }

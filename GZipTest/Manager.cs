@@ -24,9 +24,9 @@ namespace GZipTest
             SourceFilePath = sourceFilePath;
             DestinationFilePath = destinationFilePath;
             Operaton = operaton;
-            AvailableThreadsCount = Environment.ProcessorCount;
-            AvailebleMemory = 1 * 1024 * 1024 * 1024;
-            AvailebleMemoryPerThread = AvailebleMemory / AvailableThreadsCount / 20;
+            AvailableThreadsCount =  Environment.ProcessorCount;
+            AvailebleMemory = (int)Math.Pow(1024, 3);
+            AvailebleMemoryPerThread = AvailebleMemory / AvailableThreadsCount;
 
             _waitingParts = new ConcurrentDictionary<int, IPart>();
 
@@ -39,22 +39,22 @@ namespace GZipTest
             _rFileStream = new FileStream(sourceFilePath, FileMode.Open, FileAccess.Read, FileShare.Read);
             _wFileStream = new FileStream(destinationFilePath, FileMode.OpenOrCreate, FileAccess.Write, FileShare.Read);
 
-            _readBufferStream = new MemoryStream();
+            //если файла хватит на меньше чем на заданное количество потоков, то незачем создавать лишние.
+            if ((int)_rFileStream.Length / AvailebleMemoryPerThread < AvailableThreadsCount)
+                AvailableThreadsCount = ((int)_rFileStream.Length / AvailebleMemoryPerThread) + 1;
 
+            _readBufferStream = new MemoryStream();
+            Console.Write(operaton.ToString() + ": ");
             PBar = new ProgressBar();
         }
 
         public string SourceFilePath { get; set; }
         public string DestinationFilePath { get; set; }
         public Operations Operaton { get ; set; }
-
         public int AvailableThreadsCount { get; }
-
         public int AvailebleMemory { get; }
-
         public int AvailebleMemoryPerThread { get; }
         public Progress CurrentProgress { get; set; }
-
         public void Dispose()
         {
             _rFileStream.Dispose();
@@ -69,7 +69,7 @@ namespace GZipTest
             {
                 if (CurrentProgress == Progress.InProcess)
                 {
-                    byte[] buffer = new byte[AvailebleMemoryPerThread];
+                    byte[] buffer = GetBuffer();
                     int readed = _rFileStream.Read(buffer,0,buffer.Length);
                     if (readed > 0)
                     {
@@ -82,6 +82,20 @@ namespace GZipTest
                 }
                 return null;
             }
+        }
+        private byte[] GetBuffer()
+        {
+            byte[] resultBuffer;
+            if (Operaton == Operations.Decompress)
+            {
+                byte[] buffer = new byte[4];
+                _rFileStream.Read(buffer, 0, buffer.Length);
+                int length = BitConverter.ToInt32(buffer, 0);
+                resultBuffer = new byte[length];
+            }
+            else
+                resultBuffer = new byte[AvailebleMemoryPerThread];
+            return resultBuffer;
         }
 
         public bool WritePartOfFile(IPart part)
@@ -104,6 +118,11 @@ namespace GZipTest
                     if (_waitingParts.ContainsKey(i) && i == _processedParts)
                     {
                         IPart part = _waitingParts[i];
+                        if(Operaton == Operations.Compress)
+                        {
+                            byte[] lengthBuffer = BitConverter.GetBytes(part.ResultData.Length);
+                            _wFileStream.Write(lengthBuffer, 0, lengthBuffer.Length);
+                        }
                         _wFileStream.Write(part.ResultData, 0, part.ResultData.Length);
                         _wFileStream.Flush();
                         _waitingParts.TryRemove(part.Order, out IPart removedPart);

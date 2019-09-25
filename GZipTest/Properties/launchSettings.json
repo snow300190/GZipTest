@@ -3,6 +3,7 @@
     "GZipTest": {
       "commandName": "Project",
       "commandLineArgs": "compress Source.avi Result"
+      //"commandLineArgs": "decompress Result.gz Result.avi"
     }
   }
 }
